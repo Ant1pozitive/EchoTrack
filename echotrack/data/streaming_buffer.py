@@ -48,8 +48,9 @@ class AudioStreamingBuffer:
 
     def to_jax(self, chunk: np.ndarray) -> jnp.ndarray:
         """Convert numpy chunk to JAX array (float32 normalized)."""
-        # Normalize to [-1, 1] range if needed (sounddevice usually gives float32 already)
         jax_chunk = jnp.asarray(chunk, dtype=jnp.float32)
-        if jnp.max(jnp.abs(jax_chunk)) > 1.0:
-            jax_chunk = jax_chunk / 32768.0  # assume int16 otherwise
+        # Robust normalization
+        max_abs = jnp.max(jnp.abs(jax_chunk))
+        if max_abs > 1.0:
+            jax_chunk = jax_chunk / (max_abs + 1e-8)
         return jax_chunk
