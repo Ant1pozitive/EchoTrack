@@ -6,10 +6,11 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
-    {name = "Your Name", email = "your.email@example.com"}
+    {name = "Antipositive", email = "36bes36@mail.ru"}
 ]
+
 dependencies = [
-    "jax[cpu]",                  # change to jax[cuda12_pip] or jax[tpu] when needed
+    "jax[cpu]",
     "flax",
     "optax",
     "sounddevice",
@@ -17,9 +18,10 @@ dependencies = [
     "scipy",
     "matplotlib",
     "tqdm",
-    "datasets",                  # for Hugging Face ASVspoof 5
+    "datasets",
     "soundfile",
-    "librosa",                   # optional for quick feature checks
+    "librosa",
+    "orbax-checkpoint<=0.11.32",
 ]
 
 [project.optional-dependencies]
@@ -30,10 +32,3 @@ dev = [
     "ruff",
     "pre-commit",
 ]
-
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["echotrack*"]
-
-[tool.uv]
-dev-dependencies = ["echotrack[dev]"]
