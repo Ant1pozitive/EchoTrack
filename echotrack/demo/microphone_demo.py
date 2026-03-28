@@ -7,6 +7,7 @@ import sounddevice as sd
 import numpy as np
 import time
 from echotrack.data.streaming_buffer import AudioStreamingBuffer
+import jax.numpy as jnp
 
 
 def microphone_demo(duration: float = 30.0, chunk_duration_ms: int = 20):
