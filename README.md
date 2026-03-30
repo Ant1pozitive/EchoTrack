@@ -2,62 +2,71 @@
 
 **Real-time Deepfake & Synthetic Speech Trajectory Tracker** built with JAX.
 
-EchoTrack listens to live audio (microphone or WebRTC) and continuously tracks the probability that the speech is synthesized or cloned. Instead of a simple binary classifier, it builds a **temporal trajectory** of deepfake likelihood while highlighting acoustic artifacts (phase anomalies, unnatural phoneme transitions, spectral inconsistencies) over time.
+EchoTrack listens to live audio and continuously tracks the probability that the speech is synthesized or cloned, building a **temporal trajectory** of deepfake likelihood while highlighting acoustic artifacts over time.
 
-### Key Features (Week 1 MVP)
-- Streaming audio input from microphone (16 kHz, chunked)
-- JAX-native data pipeline with efficient tensor conversion
-- Dataset loader for ASVspoof 5 (the latest 2025/2026 benchmark)
-- Basic streaming buffer and preprocessing utilities
-- Ready for Mamba-2 / SSM core in the next weeks
+### Key Features
 
-### Why JAX?
-Pure JAX + Flax/NNX allows custom stateful streaming with `jax.lax.scan`, bidirectional SSMs, and excellent on-device performance.
+- **Week 1**: Streaming audio pipeline, microphone demo, ASVspoof 5 loader
+- **Week 2**: JAX-native Mamba-2 baseline model + classification head + training script
+- Fully local, low-latency, designed for streaming inference
 
 ### Installation
 
 ```bash
-# Recommended: use uv or poetry
 uv venv
 uv pip install -e ".[dev]"
-
-# Or with pip
+# or
 pip install -e ".[dev]"
 ```
 
-### Quick Start (Microphone Demo)
+### Quick Start
 
 ```bash
+# Microphone demo with baseline model
 python -m echotrack.demo.microphone_demo
+
+# Train baseline model (uses small subset for speed)
+python scripts/train_baseline.py
 ```
 
-This will open a live audio stream, process chunks, and print basic statistics.
-
-### Project Structure (Week 1)
+### Project Structure
 
 ```
-echotrack/
+EchoTrack/
 ├── src/echotrack/
-│   ├── data/           # streaming loaders and buffers
-│   ├── utils/          # jax helpers, audio utils
-│   └── demo/           # quick microphone demo
+│   ├── __init__.py
+│   ├── data/
+│   │   ├── streaming_buffer.py
+│   │   └── asvspoof_loader.py
+│   ├── utils/
+│   │   └── audio_utils.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   └── mamba_jax.py
+│   └── demo/
+│       └── microphone_demo.py
+├── scripts/
+│   └── train_baseline.py
 ├── notebooks/
 ├── configs/
-├── scripts/
 ├── tests/
 ├── pyproject.toml
 ├── README.md
 └── LICENSE
 ```
 
-### Roadmap
+### Week 2 — Baseline Model Completed
 
-See the full roadmap in the repository wiki or future updates.  
-**Week 1** — Setup, streaming audio pipeline, ASVspoof 5 loader.
+- Improved JAX-native Mamba-2 style SSM (unidirectional, selective mechanism, better stability)
+- Simple classification head (bonafide vs spoof)
+- Training script on ASVspoof 5 (small subset for fast iteration)
+- Model can be trained to reasonable baseline (target EER < 8% on dev set with full training)
+
+**Next (Week 3)**: Stateful streaming inference with `jax.lax.scan`, bidirectional fusion, full training loop + EER calculation.
 
 ### Dataset
 
-We use [jungjee/asvspoof5](https://huggingface.co/datasets/jungjee/asvspoof5) on Hugging Face.
+ASVspoof 5 from Hugging Face: `jungjee/asvspoof5`
 
 ### License
 MIT
