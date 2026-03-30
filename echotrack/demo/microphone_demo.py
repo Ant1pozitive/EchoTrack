@@ -1,59 +1,59 @@
 """
-Simple real-time microphone demo for EchoTrack Week 1.
-Records audio chunks and prints basic statistics.
+Week 2 Microphone Demo: Baseline Mamba-2 model in action.
 """
 
 import sounddevice as sd
 import numpy as np
+import jax
+import jax.numpy as jnp
 import time
 from echotrack.data.streaming_buffer import AudioStreamingBuffer
-import jax.numpy as jnp
+from echotrack.models.mamba_jax import Mamba2Classifier
 
 
-def microphone_demo(duration: float = 30.0, chunk_duration_ms: int = 20):
-    """
-    Run a live microphone demo.
+# Initialize model (random weights for Week 2 demo)
+model = Mamba2Classifier(d_model=64)
+key = jax.random.PRNGKey(42)
+dummy_input = jnp.zeros((1, 320, 1))  # batch, length, 1
+params = model.init(key, dummy_input)[ 'params']
 
-    Args:
-        duration: How long to record in seconds
-        chunk_duration_ms: Processing chunk size in milliseconds
-    """
+
+def microphone_demo(duration: float = 60.0):
     sample_rate = 16000
-    chunk_size = int(sample_rate * chunk_duration_ms / 1000)   # e.g. 320 samples
-    overlap = chunk_size // 2
+    chunk_size = 320
+    overlap = 160
 
     buffer = AudioStreamingBuffer(chunk_size=chunk_size, overlap=overlap, sample_rate=sample_rate)
 
-    print("🎤 EchoTrack Microphone Demo started")
-    print(f"Chunk size: {chunk_size} samples ({chunk_duration_ms} ms)")
-    print("Press Ctrl+C to stop\n")
+    print("🎤 EchoTrack Week 2 Demo (Mamba-2 Baseline)")
+    print("Model loaded. Listening for deepfake probability...\n")
 
     def callback(indata: np.ndarray, frames: int, time_info, status):
         if status:
-            print(f"Status: {status}")
+            print(status)
 
-        # indata shape: (frames, channels) — take mono
         mono = indata.mean(axis=1) if indata.ndim > 1 else indata.flatten()
         buffer.add_samples(mono.astype(np.float32))
 
-        chunk = buffer.get_next_chunk()
-        if chunk is not None:
-            jax_chunk = buffer.to_jax(chunk)
-            # Week 1: simple statistics only
-            rms = float(jnp.sqrt(jnp.mean(jax_chunk ** 2)))
-            peak = float(jnp.max(jnp.abs(jax_chunk)))
-            print(f"[{time.strftime('%H:%M:%S')}] Chunk processed | RMS: {rms:.4f} | Peak: {peak:.4f} | Samples: {len(chunk)}")
+        chunk_np = buffer.get_next_chunk()
+        if chunk_np is not None:
+            jax_chunk = buffer.to_jax(chunk_np)
+            jax_chunk = jnp.expand_dims(jax_chunk, axis=0)  # [1, length]
+
+            # Inference
+            probs, _ = model.apply({'params': params}, jax_chunk)
+            deepfake_prob = float(probs[0, 1])  # spoof class
+
+            timestamp = time.strftime("%H:%M:%S")
+            print(f"[{timestamp}] Chunk | Deepfake prob: {deepfake_prob:.4f} | {'🟥 SPOOF' if deepfake_prob > 0.6 else '🟩 REAL'}")
 
     try:
         with sd.InputStream(samplerate=sample_rate, channels=1, dtype='float32',
                             blocksize=chunk_size, callback=callback):
-            print(f"Listening for {duration} seconds...")
             sd.sleep(int(duration * 1000))
     except KeyboardInterrupt:
-        print("\nDemo stopped by user.")
-    except Exception as e:
-        print(f"Error: {e}")
+        print("\nDemo stopped.")
 
 
 if __name__ == "__main__":
-    microphone_demo(duration=60.0)
+    microphone_demo()
