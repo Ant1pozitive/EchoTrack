@@ -25,7 +25,30 @@ python -m echotrack.demo.microphone_demo
 ```
 
 ### Project Structure
-(соответствует текущему состоянию репозитория)
+
+```
+EchoTrack/
+├── src/echotrack/
+│   ├── __init__.py
+│   ├── data/
+│   │   ├── streaming_buffer.py
+│   │   └── asvspoof_loader.py
+│   ├── utils/
+│   │   └── audio_utils.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   └── mamba_jax.py
+│   └── demo/
+│       └── microphone_demo.py
+├── scripts/
+│   └── train_baseline.py
+├── notebooks/
+├── configs/
+├── tests/
+├── pyproject.toml
+├── README.md
+└── LICENSE
+```
 
 ### Week 2 — Baseline Model Completed
 - Improved JAX-native Mamba-2 SSM
