@@ -1,3 +1,3 @@
-from .mamba_jax import Mamba2Classifier
+"""EchoTrack: Real-time Deepfake Speech Trajectory Tracker with JAX."""
 
-__all__ = ["Mamba2Classifier"]
+__version__ = "0.2.0"
